@@ -22,8 +22,13 @@ public class CommonController {
     public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization,
                                                               @PathVariable("userId") final String userId)
             throws AuthorizationFailedException, UserNotFoundException {
+        String[] bearerToken = authorization.split("Bearer ");
+        System.out.println(bearerToken.length);
+        if (bearerToken.length < 2) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
 
-        UserEntity userEntity = userBusinessService.getUser(userId, authorization);
+        UserEntity userEntity = userBusinessService.getUser(userId, bearerToken[1]);
 
         UserDetailsResponse userDetailsResponse = new UserDetailsResponse()
                 .firstName(userEntity.getFirstName())
