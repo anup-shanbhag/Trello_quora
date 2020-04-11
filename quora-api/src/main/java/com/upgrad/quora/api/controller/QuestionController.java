@@ -54,7 +54,27 @@ public class QuestionController {
     }
 
     /**
-     * This is used to delete a question that has been posted by a user. Note, only the question owner of the question or an admin can delete a question. It takes questionId and authorization token to find and delete a question from the database.
+     * @param authorization Authorization token from request header
+     * @param questionId Id of the question to delete
+     * @param request An input request with question content
+     * @return Response Entity with questionId, message and Http Status Code
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
+     * @throws AuthorizationFailedException if a non-admin non-owner(question) attempts to edit a question.
+     * @throws InvalidQuestionException if a question with input questionId doesn't exist
+     */
+    @RequestMapping(path="/question/edit/{questionId}",method=RequestMethod.PUT,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<QuestionEditResponse> editQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId, QuestionEditRequest request) throws AuthorizationFailedException, InvalidQuestionException {
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        UserEntity user = userService.getLoggedInUser(token);
+        questionId = questionService.editQuestion(questionId, user, request.getContent());
+        QuestionEditResponse response = new QuestionEditResponse();
+        response.setId(questionId);
+        response.setStatus("QUESTION EDITED");
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    /**
+     * This is used to edit a question that has been posted by a user. Note, only the question owner of the question or an admin can edit a question. It takes questionId, question content and authorization token to find and update a question in the database.
      * @param authorization Authorization token from request header
      * @param questionId Id of the question to delete
      * @return Response Entity with questionId, message and Http Status Code

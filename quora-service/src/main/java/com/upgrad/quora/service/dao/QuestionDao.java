@@ -26,7 +26,12 @@ public class QuestionDao {
             return null;
         }
     }
+
     public void deleteQuestion(QuestionEntity question){
         entityManager.remove(question);
+    }
+
+    public void updateQuestion(QuestionEntity question){
+        entityManager.merge(question);
     }
 }
