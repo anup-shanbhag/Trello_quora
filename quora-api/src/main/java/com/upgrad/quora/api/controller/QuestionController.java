@@ -7,17 +7,15 @@ import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.type.QuestionStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
-import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.StringTokenizer;
 import java.util.UUID;
 
 @RestController
@@ -40,7 +38,7 @@ public class QuestionController {
     @RequestMapping(path="/question/create", method= RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionResponse> createQuestion(@RequestHeader("authorization") String authorization, QuestionRequest request) throws AuthorizationFailedException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getLoggedInUser(token);
+        UserEntity user = userService.getCurrentUser(token);
         QuestionEntity question = new QuestionEntity();
         question.setContent(request.getContent());
         question.setDate(LocalDate.now());
@@ -49,7 +47,7 @@ public class QuestionController {
         question = questionService.createQuestion(question);
         QuestionResponse response = new QuestionResponse();
         response.setId(question.getUuid());
-        response.setStatus("QUESTION CREATED");
+        response.setStatus(QuestionStatus.QUESTION_CREATED.getStatus());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -66,13 +64,13 @@ public class QuestionController {
     @RequestMapping(path="/question/edit/{questionId}",method=RequestMethod.PUT,consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionEditResponse> editQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId, QuestionEditRequest request) throws AuthorizationFailedException, InvalidQuestionException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getLoggedInUser(token);
+        UserEntity user = userService.getCurrentUser(token);
         QuestionEntity question = questionService.getQuestion(questionId);
         question.setContent(request.getContent());
         questionId = questionService.editQuestion(question, user);
         QuestionEditResponse response = new QuestionEditResponse();
         response.setId(questionId);
-        response.setStatus("QUESTION EDITED");
+        response.setStatus(QuestionStatus.QUESTION_EDITED.getStatus());
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
@@ -88,12 +86,12 @@ public class QuestionController {
     @RequestMapping(path="/question/delete/{questionId}",method=RequestMethod.DELETE,produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId) throws AuthorizationFailedException, InvalidQuestionException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userService.getLoggedInUser(token);
+        UserEntity user = userService.getCurrentUser(token);
         QuestionEntity question = questionService.getQuestion(questionId);
         questionId = questionService.deleteQuestion(question, user);
         QuestionDeleteResponse response = new QuestionDeleteResponse();
         response.setId(questionId);
-        response.setStatus("QUESTION DELETED");
+        response.setStatus(QuestionStatus.QUESTION_DELETED.getStatus());
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 

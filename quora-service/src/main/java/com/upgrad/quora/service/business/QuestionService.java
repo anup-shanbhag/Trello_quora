@@ -5,6 +5,7 @@ import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.type.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -55,7 +56,7 @@ public class QuestionService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String editQuestion (QuestionEntity question, UserEntity user) throws AuthorizationFailedException {
-        if(user.getId().equals(question.getUser().getId()) || user.getRole().equalsIgnoreCase("admin")){
+        if(user.getId().equals(question.getUser().getId()) || user.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
             questionDao.updateQuestion(question);
             return question.getUuid();
         }
@@ -73,7 +74,7 @@ public class QuestionService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String deleteQuestion (QuestionEntity question, UserEntity user) throws AuthorizationFailedException {
-        if(user.getId().equals(question.getUser().getId()) || user.getRole().equalsIgnoreCase("admin")){
+        if(user.getId().equals(question.getUser().getId()) || user.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
             questionDao.deleteQuestion(question);
             return question.getUuid();
         }
