@@ -31,6 +31,7 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()), HttpStatus.NOT_FOUND);
     }
 
+
     @ExceptionHandler(UnexpectedException.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedException(UnexpectedException exception, WebRequest request){
         return new ResponseEntity<>(new ErrorResponse().code(exception.getErrorCode().getCode()).message(exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
