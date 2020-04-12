@@ -1,4 +1,4 @@
-package com.upgrad.quora.service.type;
+package com.upgrad.quora.service.constants;
 
 public enum QuestionStatus {
     QUESTION_CREATED ("QUESTION CREATED"), QUESTION_EDITED ("QUESTION EDITED"), QUESTION_DELETED ("QUESTION DELETED");
