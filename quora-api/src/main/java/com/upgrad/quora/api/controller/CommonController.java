@@ -45,6 +45,6 @@ public class CommonController {
                 .dob(userEntity.getDob())
                 .contactNumber(userEntity.getContactNumber());
 
-        return new ResponseEntity<UserDetailsResponse>(userDetailsResponse, HttpStatus.OK);
+        return new ResponseEntity<>(userDetailsResponse, HttpStatus.OK);
     }
 }
