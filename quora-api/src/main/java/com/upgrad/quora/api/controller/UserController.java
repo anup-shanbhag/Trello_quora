@@ -74,19 +74,23 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SigninResponse> signinUser(@RequestHeader("authorization") String authorization)
-            throws AuthenticationFailedException {
+            throws AuthenticationFailedException, IllegalArgumentException {
+        try {
 
-        String authorizationKey = (authorization.contains("Basic ")) ?
-                StringUtils.substringAfter(authorization,"Basic ") : authorization;
+            String authorizationKey = (authorization.contains("Basic ")) ?
+                    StringUtils.substringAfter(authorization, "Basic ") : authorization;
 
-        byte[] decode = Base64.getDecoder().decode(authorizationKey);
-        String decodeText = new String(decode);
-        String[] decodedArray = decodeText.split(":");
-        UserAuthEntity userAuthEntity = userBusinessService.authenticateUser(decodedArray[0], decodedArray[1]);
+            byte[] decode = Base64.getDecoder().decode(authorizationKey);
+            String decodeText = new String(decode);
+            String[] decodedArray = decodeText.split(":");
+            UserAuthEntity userAuthEntity = userBusinessService.authenticateUser(decodedArray[0], decodedArray[1]);
 
-        SigninResponse signinResponse = new SigninResponse();
-        signinResponse.setId(userAuthEntity.getAccessToken());
-        signinResponse.setMessage("SIGNED IN SUCCESSFULLY");
-        return new ResponseEntity<>(signinResponse, HttpStatus.OK);
+            SigninResponse signinResponse = new SigninResponse();
+            signinResponse.setId(userAuthEntity.getAccessToken());
+            signinResponse.setMessage("SIGNED IN SUCCESSFULLY");
+            return new ResponseEntity<>(signinResponse, HttpStatus.OK);
+        } catch (IllegalArgumentException iae) {
+            throw new AuthenticationFailedException("ATN-002", "Password failed");
+        }
     }
 }

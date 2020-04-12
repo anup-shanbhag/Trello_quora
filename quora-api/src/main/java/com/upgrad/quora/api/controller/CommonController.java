@@ -21,17 +21,18 @@ public class CommonController {
 
     /**
      * This is used to get a user in an application. It takes input of user's uuid & authorization token.
+     *
      * @param authorization Authorization token from request header
-     * @param userId UUID of an query user
+     * @param userId        UUID of an query user
      * @return Response Entity with user profile, message and Http Status Code
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
-     * @throws UserNotFoundException if the uuid is not found
+     * @throws UserNotFoundException        if the uuid is not found
      */
     @RequestMapping(method = RequestMethod.GET, path = "/userprofile/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization,
                                                               @PathVariable("userId") final String userId)
             throws AuthorizationFailedException, UserNotFoundException {
-        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ") : authorization;
 
         UserEntity userEntity = userBusinessService.getUser(userId, token);
 
