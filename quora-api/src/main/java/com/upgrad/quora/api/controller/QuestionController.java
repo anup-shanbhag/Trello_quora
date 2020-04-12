@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/question")
+@RequestMapping("/")
 public class QuestionController {
 
     @Autowired
