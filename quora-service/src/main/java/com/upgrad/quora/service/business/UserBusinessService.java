@@ -32,4 +32,22 @@ public class UserBusinessService {
             return userEntity;
         }
     }
+
+    /**
+     * Method takes authorization token as input and return the current logged in user.
+     * @param authorizationToken User's authorization token
+     * @return Returns current logged in user
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
+     */
+    public UserEntity getCurrentUser(String authorizationToken) throws AuthorizationFailedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
+        if (userAuthEntity == null) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        } else if ((userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
+                || userAuthEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
+        } else {
+            return userAuthEntity.getUser();
+        }
+    }
 }
