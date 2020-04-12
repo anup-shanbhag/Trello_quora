@@ -54,6 +54,7 @@ public class QuestionController {
     }
 
     /**
+     * This is used to edit a question that has been posted by a user. Note, only the question owner or an admin can edit a question. It takes questionId, question content and authorization token to find and update a question in the database.
      * @param authorization Authorization token from request header
      * @param questionId Id of the question to delete
      * @param request An input request with question content
@@ -66,7 +67,9 @@ public class QuestionController {
     public ResponseEntity<QuestionEditResponse> editQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId, QuestionEditRequest request) throws AuthorizationFailedException, InvalidQuestionException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
         UserEntity user = userService.getLoggedInUser(token);
-        questionId = questionService.editQuestion(questionId, user, request.getContent());
+        QuestionEntity question = questionService.getQuestion(questionId);
+        question.setContent(request.getContent());
+        questionId = questionService.editQuestion(question, user);
         QuestionEditResponse response = new QuestionEditResponse();
         response.setId(questionId);
         response.setStatus("QUESTION EDITED");
@@ -74,7 +77,7 @@ public class QuestionController {
     }
 
     /**
-     * This is used to edit a question that has been posted by a user. Note, only the question owner of the question or an admin can edit a question. It takes questionId, question content and authorization token to find and update a question in the database.
+     * This is used to delete a question that has been posted by a user. Note, only the question owner or an admin can delete a question. It takes questionId and authorization token to find and delete a question in the database.
      * @param authorization Authorization token from request header
      * @param questionId Id of the question to delete
      * @return Response Entity with questionId, message and Http Status Code
@@ -86,7 +89,8 @@ public class QuestionController {
     public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@RequestHeader("authorization") String authorization, @PathVariable("questionId")String questionId) throws AuthorizationFailedException, InvalidQuestionException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
         UserEntity user = userService.getLoggedInUser(token);
-        questionId = questionService.deleteQuestion(questionId, user);
+        QuestionEntity question = questionService.getQuestion(questionId);
+        questionId = questionService.deleteQuestion(question, user);
         QuestionDeleteResponse response = new QuestionDeleteResponse();
         response.setId(questionId);
         response.setStatus("QUESTION DELETED");
