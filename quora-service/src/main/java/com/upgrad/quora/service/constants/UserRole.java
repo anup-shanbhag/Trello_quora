@@ -1,4 +1,4 @@
-package com.upgrad.quora.service.type;
+package com.upgrad.quora.service.constants;
 
 public enum UserRole {
     ADMIN ("ADMIN"), REGULAR ("NONADMIN");
