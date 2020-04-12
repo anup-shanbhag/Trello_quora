@@ -16,7 +16,9 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "question")
 @NamedQueries({
-        @NamedQuery(name="Questions.getById",query = "SELECT q FROM QuestionEntity q WHERE q.uuid=:questionId")
+        @NamedQuery(name="Questions.getById",query = "SELECT q FROM QuestionEntity q WHERE q.uuid=:questionId"),
+        @NamedQuery(name = "Questions.fetchByUserId", query = "SELECT q FROM QuestionEntity q WHERE q.user=:user"),
+        @NamedQuery(name="Questions.fetchAll", query = "SELECT q FROM QuestionEntity q")
 })
 public class QuestionEntity implements Serializable {
     @Id

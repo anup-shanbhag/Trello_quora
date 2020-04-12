@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 public class QuestionService {
@@ -78,6 +80,23 @@ public class QuestionService {
         else{
             throw new AuthorizationFailedException("ATHR-003","Only the question owner or admin can delete the question");
         }
+    }
+
+    /**
+     * Method returns a list of all questions available in the database irrespective of owner or posted user
+     * @return a list of all questions available in the database
+     */
+    public List<QuestionEntity> getAllQuestions(){
+        return questionDao.getAllQuestions();
+    }
+
+    /**
+     * Method returns a list of all questions posted by a specific user
+     * @param user a user whose questions are to be fetched
+     * @return a list of questions posted by the input user
+     */
+    public List<QuestionEntity> getUserQuestions(UserEntity user){
+        return questionDao.getUserQuestions(user);
     }
 
 }

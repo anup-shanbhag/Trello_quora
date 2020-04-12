@@ -1,10 +1,12 @@
 package com.upgrad.quora.service.dao;
 
 import com.upgrad.quora.service.entity.QuestionEntity;
+import com.upgrad.quora.service.entity.UserEntity;
 import org.aspectj.weaver.patterns.TypePatternQuestions;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -51,5 +53,22 @@ public class QuestionDao {
      */
     public void updateQuestion(QuestionEntity question){
         entityManager.merge(question);
+    }
+
+    /**
+     * Method fetches questions available in the database irrespective of owner or posted user
+     * @return a list of all questions available in the database
+     */
+    public List<QuestionEntity> getAllQuestions(){
+        return entityManager.createNamedQuery("Questions.fetchAll").getResultList();
+    }
+
+    /**
+     * Method takes user as a parameter and fetches all questions posted by the user
+     * @param user a user whose questions are to be fetched
+     * @return a list questions posted by the user
+     */
+    public List<QuestionEntity> getUserQuestions(UserEntity user){
+        return entityManager.createNamedQuery("Questions.fetchByUserId").setParameter("user",user).getResultList();
     }
 }
