@@ -7,6 +7,8 @@ import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +18,18 @@ public class UserBusinessService {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private PasswordCryptographyProvider passwordCryptographyProvider;
+
+    /**
+     * Method takes a userUuid as a parameter and fetches the user entity from database
+     *
+     * @param userUuid
+     * @return User entity from the database table with uuid = userUuid
+     * @throws AuthorizationFailedException
+     * @throws UserNotFoundException
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity getUser(final String userUuid, final String authorizationToken)
             throws AuthorizationFailedException, UserNotFoundException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
@@ -31,5 +45,20 @@ public class UserBusinessService {
             }
             return userEntity;
         }
+    }
+
+    /**
+     * Method takes a user entity and stores it in the database
+     *
+     * @param newUser User profile to be stored in the database
+     * @return Created user entity
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserEntity registerUser(UserEntity newUser) {
+        String[] encryptedText = passwordCryptographyProvider.encrypt(newUser.getPassword());
+        newUser.setSalt(encryptedText[0]);
+        newUser.setPassword(encryptedText[1]);
+
+        return userDao.registerUser(newUser);
     }
 }

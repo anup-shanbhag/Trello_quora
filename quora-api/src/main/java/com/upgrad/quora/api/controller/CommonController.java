@@ -5,6 +5,7 @@ import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,17 +19,21 @@ public class CommonController {
     @Autowired
     private UserBusinessService userBusinessService;
 
+    /**
+     * This is used to get a user in an application. It takes input of user's uuid & authorization token.
+     * @param authorization Authorization token from request header
+     * @param userId UUID of an query user
+     * @return Response Entity with user profile, message and Http Status Code
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
+     * @throws UserNotFoundException if the uuid is not found
+     */
     @RequestMapping(method = RequestMethod.GET, path = "/userprofile/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization,
                                                               @PathVariable("userId") final String userId)
             throws AuthorizationFailedException, UserNotFoundException {
-        String[] bearerToken = authorization.split("Bearer ");
-        System.out.println(bearerToken.length);
-        if (bearerToken.length < 2) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
-        }
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
 
-        UserEntity userEntity = userBusinessService.getUser(userId, bearerToken[1]);
+        UserEntity userEntity = userBusinessService.getUser(userId, token);
 
         UserDetailsResponse userDetailsResponse = new UserDetailsResponse()
                 .firstName(userEntity.getFirstName())
