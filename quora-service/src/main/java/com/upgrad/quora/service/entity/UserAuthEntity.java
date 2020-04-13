@@ -12,11 +12,13 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "user_auth")
 @NamedQueries({
         @NamedQuery(name = "userAuthTokenByAccessToken", query = "select ut from UserAuthEntity ut where ut.accessToken=:accessToken")
+
 })
 public class UserAuthEntity implements Serializable {
     @Id
@@ -35,12 +37,10 @@ public class UserAuthEntity implements Serializable {
     private String accessToken;
 
     @Column(name = "EXPIRES_AT")
-    @NotNull
-    private LocalDateTime expiresAt;
+    private ZonedDateTime expiresAt;
 
     @Column(name = "LOGIN_AT")
-    @NotNull
-    private LocalDateTime loginAt;
+    private ZonedDateTime loginAt;
 
     @Column(name = "LOGOUT_AT")
     private LocalDateTime logoutAt;
@@ -74,19 +74,19 @@ public class UserAuthEntity implements Serializable {
         this.accessToken = accessToken;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public ZonedDateTime getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
+    public void setExpiresAt(ZonedDateTime expiresAt) {
         this.expiresAt = expiresAt;
     }
 
-    public LocalDateTime getLoginAt() {
+    public ZonedDateTime getLoginAt() {
         return loginAt;
     }
 
-    public void setLoginAt(LocalDateTime loginAt) {
+    public void setLoginAt(ZonedDateTime loginAt) {
         this.loginAt = loginAt;
     }
 
