@@ -71,7 +71,6 @@ public class UserDao {
     public UserEntity registerUser(final UserEntity newUser) {
         entityManager.persist(newUser);
         return newUser;
-
     }
 
     /**

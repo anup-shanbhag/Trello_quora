@@ -96,7 +96,7 @@ public class UserBusinessService {
             throw new AuthenticationFailedException("ATN-001", "This username does not exist");
         }
 
-        String encrypedPassword = passwordCryptographyProvider.encrypt(password, userEntity.getSalt());
+        String encrypedPassword = PasswordCryptographyProvider.encrypt(password, userEntity.getSalt());
 
         if (encrypedPassword.equals(userEntity.getPassword())) {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(encrypedPassword);

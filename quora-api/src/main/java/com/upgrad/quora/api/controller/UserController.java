@@ -42,18 +42,18 @@ public class UserController {
     public ResponseEntity<SignupUserResponse> registerUser(SignupUserRequest user) {
         UserEntity newUserEntiry = new UserEntity();
 
-        newUserEntiry.setFirstName(user.getFirstName());
-        newUserEntiry.setLastName(user.getLastName());
-        newUserEntiry.setUserName(user.getUserName());
-        newUserEntiry.setEmail(user.getEmailAddress());
-        newUserEntiry.setPassword(user.getPassword());
-        newUserEntiry.setCountry(user.getCountry());
-        newUserEntiry.setAboutMe(user.getAboutMe());
-        newUserEntiry.setDob(user.getDob());
-        newUserEntiry.setContactNumber(user.getContactNumber());
-        newUserEntiry.setRole("nonadmin");
-        newUserEntiry.setUuid(UUID.randomUUID().toString());
-        newUserEntiry.setSalt("quora123");
+            newUserEntiry.setFirstName(user.getFirstName());
+            newUserEntiry.setLastName(user.getLastName());
+            newUserEntiry.setUserName(user.getUserName());
+            newUserEntiry.setEmail(user.getEmailAddress());
+            newUserEntiry.setPassword(user.getPassword());
+            newUserEntiry.setCountry(user.getCountry());
+            newUserEntiry.setAboutMe(user.getAboutMe());
+            newUserEntiry.setDob(user.getDob());
+            newUserEntiry.setContactNumber(user.getContactNumber());
+            newUserEntiry.setRole("nonadmin");
+            newUserEntiry.setUuid(UUID.randomUUID().toString());
+            newUserEntiry.setSalt("quora123");
 
         UserEntity createdUser = userBusinessService.registerUser(newUserEntiry);
         SignupUserResponse userResponse = new SignupUserResponse()
