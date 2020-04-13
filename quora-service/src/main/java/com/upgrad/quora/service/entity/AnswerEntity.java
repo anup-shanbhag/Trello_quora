@@ -6,12 +6,16 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 
 @Entity
 @Table(name = "answer")
-public class AnswerEntity {
+@NamedQueries({
+    @NamedQuery(name="Answer.getById",query = "SELECT a FROM AnswerEntity a WHERE a.uuid=:answerId"),
+})
+public class AnswerEntity implements Serializable {
 
     @Id
     @Column(name = "id")
@@ -33,12 +37,12 @@ public class AnswerEntity {
     @NotNull
     private LocalDate date;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private QuestionEntity question;
@@ -90,27 +94,5 @@ public class AnswerEntity {
 
     public void setQuestion(QuestionEntity question) {
         this.question = question;
-    }
-
-    @Override
-    public String toString() {
-        return "AnswerEntity{" +
-            "id=" + id +
-            ", uuid='" + uuid + '\'' +
-            ", ans='" + ans + '\'' +
-            ", date=" + date +
-            ", user=" + user +
-            ", question=" + question +
-            '}';
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
     }
 }
