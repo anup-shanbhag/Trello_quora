@@ -8,6 +8,7 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import com.upgrad.quora.service.constants.QuestionStatus;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -49,6 +52,26 @@ public class QuestionController {
         response.setId(question.getUuid());
         response.setStatus(QuestionStatus.QUESTION_CREATED.getStatus());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    /**
+     * This is used to fetch all questions have been posted in the application. It takes authorization token to list all available questions from the application.
+     * @param authorization Authorization token from request header
+     * @return List of all questions posted in the application
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
+     */
+    @RequestMapping(path="/question/all",method=RequestMethod.GET,produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        UserEntity user = userService.getCurrentUser(token);
+        List<QuestionDetailsResponse> responseItems = new ArrayList<>();
+        questionService.getAllQuestions().forEach (question -> responseItems.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        if(responseItems.isEmpty()){
+            return new ResponseEntity<>(responseItems,HttpStatus.NO_CONTENT);
+        }
+        else{
+            return new ResponseEntity<>(responseItems,HttpStatus.OK);
+        }
     }
 
     /**
@@ -95,6 +118,27 @@ public class QuestionController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    /**
+     * This is used to fetch all questions posted by a specific user in the application. It takes authorization token and the user id  of the user and fetches list questions posted by the user.
+     * @param authorization Authorization token from request header
+     * @param userId Id of the user whose question need to be retrieved
+     * @return Response Entity with Http Status Code and question details (id & content) for all questions posted by user with input user id
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
+     * @throws AuthorizationFailedException if userId is invalid (no such user exists)
+     */
+    @RequestMapping(path="question/all/{userId}",method=RequestMethod.GET,produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<QuestionDetailsResponse>> getUserQuestions(@RequestHeader("authorization") String authorization, @PathVariable("userId")String userId) throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        UserEntity user = userService.getUser(userId,token);
+        List<QuestionDetailsResponse> responseItems = new ArrayList<>();
+        questionService.getUserQuestions(user).forEach (question -> responseItems.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+        if(responseItems.isEmpty()){
+            return new ResponseEntity<>(responseItems,HttpStatus.NO_CONTENT);
+        }
+        else{
+            return new ResponseEntity<>(responseItems,HttpStatus.OK);
+        }
+    }
 
 
 }

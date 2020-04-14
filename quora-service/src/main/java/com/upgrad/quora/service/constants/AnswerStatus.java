@@ -12,4 +12,5 @@ public enum AnswerStatus {
     public String getTextStatus() {
         return textStatus;
     }
+
 }
