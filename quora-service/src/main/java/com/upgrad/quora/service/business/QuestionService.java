@@ -56,7 +56,7 @@ public class QuestionService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public String editQuestion (QuestionEntity question, UserEntity user) throws AuthorizationFailedException {
-        if(user.getId().equals(question.getUser().getId()) || user.getRole().equalsIgnoreCase(UserRole.ADMIN.getRole())){
+        if(user.getId().equals(question.getUser().getId())){
             questionDao.updateQuestion(question);
             return question.getUuid();
         }

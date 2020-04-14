@@ -1,6 +1,5 @@
 package com.upgrad.quora.service.entity;
 
-import org.apache.commons.lang3.builder.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -10,41 +9,44 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+
 @Entity
-@Table(name = "question")
+@Table(name = "answer")
 @NamedQueries({
-        @NamedQuery(name="Questions.getById",query = "SELECT q FROM QuestionEntity q WHERE q.uuid=:questionId"),
-        @NamedQuery(name = "Questions.fetchByUserId", query = "SELECT q FROM QuestionEntity q WHERE q.user=:user"),
-        @NamedQuery(name="Questions.fetchAll", query = "SELECT q FROM QuestionEntity q")
+    @NamedQuery(name="Answer.getById",query = "SELECT a FROM AnswerEntity a WHERE a.uuid=:answerId"),
 })
-public class QuestionEntity implements Serializable {
+public class AnswerEntity implements Serializable {
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+
     @Column(name = "uuid")
-    @NotNull
     @Size(max = 200)
+    @NotNull
     private String uuid;
 
-    @Column(name = "content")
+    @Column(name = "ans")
+    @Size(max = 255)
     @NotNull
-    @Size(max = 500)
-    private String content;
+    private String ans;
 
     @Column(name = "date")
     @NotNull
     private LocalDate date;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @NotNull
-    @ToStringExclude
-    @HashCodeExclude
-    @EqualsExclude
     private UserEntity user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private QuestionEntity question;
+
 
     public Integer getId() {
         return id;
@@ -62,12 +64,12 @@ public class QuestionEntity implements Serializable {
         this.uuid = uuid;
     }
 
-    public String getContent() {
-        return content;
+    public String getAns() {
+        return ans;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setAns(String ans) {
+        this.ans = ans;
     }
 
     public LocalDate getDate() {
@@ -86,18 +88,11 @@ public class QuestionEntity implements Serializable {
         this.user = user;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return EqualsBuilder.reflectionEquals(this,obj,Boolean.FALSE);
+    public QuestionEntity getQuestion() {
+        return question;
     }
 
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this,Boolean.FALSE);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    public void setQuestion(QuestionEntity question) {
+        this.question = question;
     }
 }
