@@ -1,4 +1,4 @@
-package com.upgrad.quora.api.controller;
+/*package com.upgrad.quora.api.controller;
 
 
 import org.junit.Test;
@@ -81,7 +81,7 @@ public class AnswerControllerTest {
     }
 }
 
-    /*//This test case passes when you try to delete the answer but the JWT token entered does not exist in the database.
+    //This test case passes when you try to delete the answer but the JWT token entered does not exist in the database.
     @Test
     public void deleteAnswerWithNonExistingAccessToken() throws Exception {
         mvc.perform(MockMvcRequestBuilders.delete("/answer/delete/database_answer_uuid").header("authorization", "non_existing_access_token"))
