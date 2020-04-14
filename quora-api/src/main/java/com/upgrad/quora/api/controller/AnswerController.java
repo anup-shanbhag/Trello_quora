@@ -1,15 +1,13 @@
 package com.upgrad.quora.api.controller;
 
-import com.upgrad.quora.api.model.AnswerEditRequest;
-import com.upgrad.quora.api.model.AnswerEditResponse;
-import com.upgrad.quora.api.model.AnswerRequest;
-import com.upgrad.quora.api.model.AnswerResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.AnswerBusinessService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.constants.AnswerStatus;
 import com.upgrad.quora.service.entity.AnswerEntity;
 import com.upgrad.quora.service.entity.QuestionEntity;
+import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
@@ -68,19 +66,24 @@ public class AnswerController {
                AnswerEditRequest answerEditRequest, @PathVariable("answerId") final String answerId)
         throws AnswerNotFoundException,AuthorizationFailedException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        AnswerEntity answerEntity;
-        try {
-            answerEntity = answerBusinessService.getAnswer(answerId);
-        }catch (AnswerNotFoundException ANF){
-            throw new AnswerNotFoundException("ANS-001","Entered answer uuid does not exist");
-        }
-        if (!answerEntity.getUser().getUuid().equals(userBusinessService.getCurrentUser(token).getUuid())) {
-            throw new AuthorizationFailedException("ATHR-003", "Only the answer owner can edit the answer");
-        }
+        UserEntity user = userBusinessService.getCurrentUser(token);
+        AnswerEntity answerEntity = answerBusinessService.getAnswer(answerId);
         answerEntity.setAns(answerEditRequest.getContent());
-        AnswerEntity editedAnswer = answerBusinessService.editAnswer(answerEntity);
+        AnswerEntity editedAnswer = answerBusinessService.editAnswer(answerEntity,user);
         AnswerEditResponse answerEditResponse = new AnswerEditResponse().id(editedAnswer.getUuid()).status(AnswerStatus.ANSWER_EDITED.getTextStatus());
         return new ResponseEntity<AnswerEditResponse>(answerEditResponse, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path ="/answer/delete/{answerId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<AnswerDeleteResponse> deleteAnsuwer(@RequestHeader("authorization") final String authorization,@PathVariable("answerId") String answerId) throws AuthorizationFailedException, AnswerNotFoundException {
+        String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
+        UserEntity user = userBusinessService.getCurrentUser(token);
+        AnswerEntity answerEntity = answerBusinessService.getAnswer(answerId);
+        answerId = answerBusinessService.deleteAnswer(answerEntity,user);
+        AnswerDeleteResponse answerDeleteResponse = new AnswerDeleteResponse();
+        answerDeleteResponse.setId(answerId);
+        answerDeleteResponse.setStatus(AnswerStatus.ANSWER_DELETED.getTextStatus());
+        return new ResponseEntity<AnswerDeleteResponse>(answerDeleteResponse, HttpStatus.OK);
     }
 }
 
