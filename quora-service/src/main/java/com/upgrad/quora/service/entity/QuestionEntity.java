@@ -1,9 +1,6 @@
 package com.upgrad.quora.service.entity;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -44,6 +41,9 @@ public class QuestionEntity implements Serializable {
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
+    @ToStringExclude
+    @HashCodeExclude
+    @EqualsExclude
     private UserEntity user;
 
     public Integer getId() {
@@ -88,12 +88,12 @@ public class QuestionEntity implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return new EqualsBuilder().append(this, obj).isEquals();
+        return EqualsBuilder.reflectionEquals(this,obj,Boolean.FALSE);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this).hashCode();
+        return HashCodeBuilder.reflectionHashCode(this,Boolean.FALSE);
     }
 
     @Override

@@ -32,4 +32,8 @@ public class AnswerDao {
         return answerEntity;
     }
 
+    public void deleteAnswer(AnswerEntity answerEntity){
+        entityManager.remove(answerEntity);
+    }
+
 }
