@@ -5,6 +5,7 @@ import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -117,6 +118,26 @@ public class UserBusinessService {
             return userAuthEntity;
         } else {
             throw new AuthenticationFailedException("ATN-002", "Password failed");
+        }
+    }
+
+    /**
+     * Method takes authorization token as input and sign-out user.
+     *
+     * @param authorizationToken User's authorization token
+     * @return Signed-out user entity
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserEntity signoutUser(String authorizationToken) throws SignOutRestrictedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
+
+        if(userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
+                || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
+            throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
+        }else {
+            userAuthEntity.setLogoutAt(LocalDateTime.now());
+            userDao.signoutUser(userAuthEntity);
+            return userAuthEntity.getUser();
         }
     }
 }
