@@ -41,7 +41,7 @@ public class UserController {
             path = "/user/signup",
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SignupUserResponse> registerUser(SignupUserRequest user) throws SignUpRestrictedException, SignOutRestrictedException {
+    public ResponseEntity<SignupUserResponse> registerUser(SignupUserRequest user) throws SignUpRestrictedException {
         UserEntity newUserEntiry = new UserEntity();
 
         newUserEntiry.setFirstName(user.getFirstName());
