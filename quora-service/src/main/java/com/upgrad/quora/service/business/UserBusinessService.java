@@ -3,11 +3,11 @@ package com.upgrad.quora.service.business;
 import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
-import com.upgrad.quora.service.exception.SignOutRestrictedException;
-import com.upgrad.quora.service.exception.UserNotFoundException;
+import com.upgrad.quora.service.exception.*;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,13 +75,24 @@ public class UserBusinessService {
      * @param newUser User profile to be stored in the database
      * @return Created user entity
      */
-    @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity registerUser(UserEntity newUser) {
-        String[] encryptedText = passwordCryptographyProvider.encrypt(newUser.getPassword());
-        newUser.setSalt(encryptedText[0]);
-        newUser.setPassword(encryptedText[1]);
-
-        return userDao.registerUser(newUser);
+    public UserEntity registerUser(UserEntity newUser) throws SignUpRestrictedException {
+        try {
+            String[] encryptedText = passwordCryptographyProvider.encrypt(newUser.getPassword());
+            newUser.setSalt(encryptedText[0]);
+            newUser.setPassword(encryptedText[1]);
+            return userDao.registerUser(newUser);
+        }catch (DataIntegrityViolationException dataIntegrityViolationException) {
+            if (dataIntegrityViolationException.getCause() instanceof ConstraintViolationException) {
+                String constraintName = ((ConstraintViolationException) dataIntegrityViolationException.getCause()).getConstraintName();
+                if (StringUtils.containsIgnoreCase(constraintName, "userName")) {
+                    throw new SignUpRestrictedException("SGR-001", "Try any other Username, this Username has already been taken");
+                } else {
+                    throw new SignUpRestrictedException("SGR-002", "This user has already been registered, try with any other emailId");
+                }
+            } else {
+                throw dataIntegrityViolationException;
+            }
+        }
     }
 
     /**

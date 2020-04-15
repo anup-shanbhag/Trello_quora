@@ -3,6 +3,8 @@ package com.upgrad.quora.service.dao;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -68,10 +70,11 @@ public class UserDao {
      * @param newUser, user profile to be created
      * @return userEntity, created user profile
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity registerUser(final UserEntity newUser) {
         entityManager.persist(newUser);
         return newUser;
-    }
+}
 
     /**
      * Method takes user auth entity as a parameter, and creates it in the database
@@ -98,7 +101,7 @@ public class UserDao {
     /**
      * Method takes user profile of user to be deleted and delete the user profile
      *
-     * @param user,  user profile of user to be deleted
+     * @param user, user profile of user to be deleted
      * @return deletedUser of deleted user
      */
     public void deleteUser(UserEntity user) {
