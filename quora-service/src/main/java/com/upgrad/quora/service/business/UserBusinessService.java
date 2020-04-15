@@ -131,13 +131,48 @@ public class UserBusinessService {
     public UserEntity signoutUser(String authorizationToken) throws SignOutRestrictedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
 
-        if(userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
+        if (userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
                 || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
             throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
-        }else {
+        } else {
             userAuthEntity.setLogoutAt(LocalDateTime.now());
             userDao.signoutUser(userAuthEntity);
             return userAuthEntity.getUser();
+        }
+    }
+
+    /**
+     * Method takes userId & access token as input and delete user.
+     *
+     * @param token  User's authorization token
+     * @param userId uuid of user to be deleted
+     * @return uuid of deleted user
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String deleteUser(String userId, String token)
+            throws AuthorizationFailedException, UserNotFoundException {
+        try {
+            UserEntity adminUser = this.getCurrentUser(token);
+            if (!adminUser.getRole().equals("admin")) {
+                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+            } else {
+                UserEntity user = userDao.getUser(userId);
+                if (user == null) {
+                    throw new UserNotFoundException("USR-001", "User with entered uuid to be deleted does not exist");
+                } else {
+                    userDao.deleteUser(user);
+                }
+                return userId;
+            }
+        } catch (AuthorizationFailedException afe) {
+            if (afe.getCode().equals("ATHR-001")) {
+                throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+            } else if (afe.getCode().equals("ATHR-002")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out");
+            } else if (afe.getCode().equals("ATHR-003")) {
+                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+            }
+            return null;
         }
     }
 }

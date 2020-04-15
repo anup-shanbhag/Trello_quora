@@ -94,4 +94,14 @@ public class UserDao {
         entityManager.merge(userAuthEntity);
         return userAuthEntity.getUser();
     }
+
+    /**
+     * Method takes user profile of user to be deleted and delete the user profile
+     *
+     * @param user,  user profile of user to be deleted
+     * @return deletedUser of deleted user
+     */
+    public void deleteUser(UserEntity user) {
+        entityManager.remove(user);
+    }
 }
