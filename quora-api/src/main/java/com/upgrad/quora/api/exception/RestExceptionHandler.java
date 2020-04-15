@@ -48,7 +48,7 @@ public class RestExceptionHandler {
     @ExceptionHandler(SignUpRestrictedException.class)
     public ResponseEntity<ErrorResponse> signUpRestrictedException(SignUpRestrictedException sre, WebRequest webRequest) {
         return new ResponseEntity<>(
-                new ErrorResponse().code(sre.getCode()).message(sre.getErrorMessage()), HttpStatus.UNAUTHORIZED);
+                new ErrorResponse().code(sre.getCode()).message(sre.getErrorMessage()), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(SignOutRestrictedException.class)
