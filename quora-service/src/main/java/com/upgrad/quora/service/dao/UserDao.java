@@ -83,4 +83,15 @@ public class UserDao {
         entityManager.persist(userAuthEntity);
         return userAuthEntity;
     }
+
+    /**
+     * Method takes user auth entity as a parameter, and updates it in the database
+     *
+     * @param userAuthEntity, user auth entity with updated LogoutAt time
+     * @return userEntity of signed-out user profile
+     */
+    public UserEntity signoutUser(UserAuthEntity userAuthEntity) {
+        entityManager.merge(userAuthEntity);
+        return userAuthEntity.getUser();
+    }
 }
