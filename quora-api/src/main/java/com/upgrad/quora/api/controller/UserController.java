@@ -1,12 +1,14 @@
 package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.SigninResponse;
+import com.upgrad.quora.api.model.SignoutResponse;
 import com.upgrad.quora.api.model.SignupUserRequest;
 import com.upgrad.quora.api.model.SignupUserResponse;
 import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,18 +44,18 @@ public class UserController {
     public ResponseEntity<SignupUserResponse> registerUser(SignupUserRequest user) {
         UserEntity newUserEntiry = new UserEntity();
 
-            newUserEntiry.setFirstName(user.getFirstName());
-            newUserEntiry.setLastName(user.getLastName());
-            newUserEntiry.setUserName(user.getUserName());
-            newUserEntiry.setEmail(user.getEmailAddress());
-            newUserEntiry.setPassword(user.getPassword());
-            newUserEntiry.setCountry(user.getCountry());
-            newUserEntiry.setAboutMe(user.getAboutMe());
-            newUserEntiry.setDob(user.getDob());
-            newUserEntiry.setContactNumber(user.getContactNumber());
-            newUserEntiry.setRole("nonadmin");
-            newUserEntiry.setUuid(UUID.randomUUID().toString());
-            newUserEntiry.setSalt("quora123");
+        newUserEntiry.setFirstName(user.getFirstName());
+        newUserEntiry.setLastName(user.getLastName());
+        newUserEntiry.setUserName(user.getUserName());
+        newUserEntiry.setEmail(user.getEmailAddress());
+        newUserEntiry.setPassword(user.getPassword());
+        newUserEntiry.setCountry(user.getCountry());
+        newUserEntiry.setAboutMe(user.getAboutMe());
+        newUserEntiry.setDob(user.getDob());
+        newUserEntiry.setContactNumber(user.getContactNumber());
+        newUserEntiry.setRole("nonadmin");
+        newUserEntiry.setUuid(UUID.randomUUID().toString());
+        newUserEntiry.setSalt("quora123");
 
         UserEntity createdUser = userBusinessService.registerUser(newUserEntiry);
         SignupUserResponse userResponse = new SignupUserResponse()
@@ -92,5 +94,29 @@ public class UserController {
         } catch (IllegalArgumentException iae) {
             throw new AuthenticationFailedException("ATN-002", "Password failed");
         }
+    }
+
+    /**
+     * This is used to sign-out a user. It takes input access token, validates, sign-out user and LogoutAt time
+     *
+     * @param authorization Access token from request header
+     * @return Response Entity with signed-out user's uuid, message and Http Status Code
+     * @throws SignOutRestrictedException if authorization is invalid
+     */
+    @RequestMapping(method = RequestMethod.POST,
+            path = "/user/signout",
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<SignoutResponse> signoutUser(@RequestHeader("authorization") String authorization)
+            throws SignOutRestrictedException {
+        String token = (authorization.contains("Bearer ")) ?
+                StringUtils.substringAfter(authorization, "Bearer ") : authorization;
+
+        UserEntity userEntity = userBusinessService.signoutUser(token);
+        SignoutResponse signoutResponse = new SignoutResponse();
+        signoutResponse.setId(userEntity.getUuid());
+        signoutResponse.setMessage("SIGNED OUT SUCCESSFULLY");
+
+        return new ResponseEntity<>(signoutResponse, HttpStatus.OK);
+
     }
 }
