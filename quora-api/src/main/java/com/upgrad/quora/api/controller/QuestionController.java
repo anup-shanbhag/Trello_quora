@@ -52,7 +52,7 @@ public class QuestionController {
 	 * @throws AuthorizationFailedException if the authorization token is invalid,
 	 *                                      expired or not found
 	 */
-	@RequestMapping(path = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(path = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<QuestionResponse> createQuestion(@RequestHeader("authorization") String authorization,
 			QuestionRequest request) throws AuthorizationFailedException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
@@ -80,7 +80,7 @@ public class QuestionController {
 	 * @throws AuthorizationFailedException if the authorization token is invalid,
 	 *                                      expired or not found.
 	 */
-	@RequestMapping(path = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(path = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<List<QuestionDetailsResponse>> getAllQuestions(
 			@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
@@ -113,7 +113,7 @@ public class QuestionController {
 	 * @throws InvalidQuestionException     if a question with input questionId
 	 *                                      doesn't exist
 	 */
-	@RequestMapping(path = "/edit/{questionId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(path = "/edit/{questionId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<QuestionEditResponse> editQuestion(@RequestHeader("authorization") String authorization,
 			@PathVariable("questionId") String questionId, QuestionEditRequest request)
 			throws AuthorizationFailedException, InvalidQuestionException {
@@ -144,7 +144,7 @@ public class QuestionController {
 	 * @throws InvalidQuestionException     if a question with input questionId
 	 *                                      doesn't exist
 	 */
-	@RequestMapping(path = "/delete/{questionId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(path = "/delete/{questionId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<QuestionDeleteResponse> deleteQuestion(@RequestHeader("authorization") String authorization,
 			@PathVariable("questionId") String questionId)
 			throws AuthorizationFailedException, InvalidQuestionException {
@@ -173,7 +173,7 @@ public class QuestionController {
 	 * @throws AuthorizationFailedException if userId is invalid (no such user
 	 *                                      exists)
 	 */
-	@RequestMapping(path = "/all/{userId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(path = "/all/{userId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<List<QuestionDetailsResponse>> getUserQuestions(
 			@RequestHeader("authorization") String authorization, @PathVariable("userId") String userId)
 			throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
