@@ -1,3 +1,15 @@
+/**
+ * This JAVA class implements the following endpoints:
+ * a. /question/create
+ * b. /question/all
+ * c. /question/edit/{questionId}
+ * d. /question/delete/{questionId}
+ * e. /question/all/{userId}
+ * @author  Anup Shanbhag (shanbhaganup@gmail.com)
+ * @version 1.0
+ * @since   2020-04-16
+ */
+
 package com.upgrad.quora.api.controller;
 
 import java.time.LocalDate;
