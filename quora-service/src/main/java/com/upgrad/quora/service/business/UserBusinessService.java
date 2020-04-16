@@ -38,6 +38,7 @@ public class UserBusinessService {
      * @param authorizationToken User's authorization token
      * @return Returns current logged in user
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
+     * @author Anup Shanbhag (shanbhaganup@gmail.com)
      */
     public UserEntity getCurrentUser(String authorizationToken) throws AuthorizationFailedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);

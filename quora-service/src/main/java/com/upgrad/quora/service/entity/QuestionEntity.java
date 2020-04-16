@@ -1,3 +1,11 @@
+/**
+ * This JAVA class JPA Entity for questions, and defined all getter
+ * and setter methods for all it's attributes
+ * @author  Anup Shanbhag (shanbhaganup@gmail.com)
+ * @version 1.0
+ * @since   2020-04-16
+ */
+
 package com.upgrad.quora.service.entity;
 
 import java.io.Serializable;
