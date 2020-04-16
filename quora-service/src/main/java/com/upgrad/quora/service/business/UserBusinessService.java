@@ -3,11 +3,11 @@ package com.upgrad.quora.service.business;
 import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
-import com.upgrad.quora.service.exception.SignOutRestrictedException;
-import com.upgrad.quora.service.exception.UserNotFoundException;
+import com.upgrad.quora.service.exception.*;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,13 +75,24 @@ public class UserBusinessService {
      * @param newUser User profile to be stored in the database
      * @return Created user entity
      */
-    @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity registerUser(UserEntity newUser) {
-        String[] encryptedText = passwordCryptographyProvider.encrypt(newUser.getPassword());
-        newUser.setSalt(encryptedText[0]);
-        newUser.setPassword(encryptedText[1]);
-
-        return userDao.registerUser(newUser);
+    public UserEntity registerUser(UserEntity newUser) throws SignUpRestrictedException {
+        try {
+            String[] encryptedText = passwordCryptographyProvider.encrypt(newUser.getPassword());
+            newUser.setSalt(encryptedText[0]);
+            newUser.setPassword(encryptedText[1]);
+            return userDao.registerUser(newUser);
+        }catch (DataIntegrityViolationException dataIntegrityViolationException) {
+            if (dataIntegrityViolationException.getCause() instanceof ConstraintViolationException) {
+                String constraintName = ((ConstraintViolationException) dataIntegrityViolationException.getCause()).getConstraintName();
+                if (StringUtils.containsIgnoreCase(constraintName, "userName")) {
+                    throw new SignUpRestrictedException("SGR-001", "Try any other Username, this Username has already been taken");
+                } else {
+                    throw new SignUpRestrictedException("SGR-002", "This user has already been registered, try with any other emailId");
+                }
+            } else {
+                throw dataIntegrityViolationException;
+            }
+        }
     }
 
     /**
@@ -131,13 +142,48 @@ public class UserBusinessService {
     public UserEntity signoutUser(String authorizationToken) throws SignOutRestrictedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
 
-        if(userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
+        if (userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
                 || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
             throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
-        }else {
+        } else {
             userAuthEntity.setLogoutAt(LocalDateTime.now());
             userDao.signoutUser(userAuthEntity);
             return userAuthEntity.getUser();
+        }
+    }
+
+    /**
+     * Method takes userId & access token as input and delete user.
+     *
+     * @param token  User's authorization token
+     * @param userId uuid of user to be deleted
+     * @return uuid of deleted user
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String deleteUser(String userId, String token)
+            throws AuthorizationFailedException, UserNotFoundException {
+        try {
+            UserEntity adminUser = this.getCurrentUser(token);
+            if (!adminUser.getRole().equals("admin")) {
+                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+            } else {
+                UserEntity user = userDao.getUser(userId);
+                if (user == null) {
+                    throw new UserNotFoundException("USR-001", "User with entered uuid to be deleted does not exist");
+                } else {
+                    userDao.deleteUser(user);
+                }
+                return userId;
+            }
+        } catch (AuthorizationFailedException afe) {
+            if (afe.getCode().equals("ATHR-001")) {
+                throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+            } else if (afe.getCode().equals("ATHR-002")) {
+                throw new AuthorizationFailedException("ATHR-002", "User is signed out");
+            } else if (afe.getCode().equals("ATHR-003")) {
+                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+            }
+            return null;
         }
     }
 }
