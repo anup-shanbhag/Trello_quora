@@ -1,3 +1,11 @@
+/**
+ * This JAVA class implements question service handling business
+ * logic for creating, reading, updating, deleting and listing questions
+ * @author  Anup Shanbhag (shanbhaganup@gmail.com)
+ * @version 1.0
+ * @since   2020-04-16
+ */
+
 package com.upgrad.quora.service.business;
 
 import java.util.List;
