@@ -29,6 +29,7 @@ public class UserBusinessService {
      * Method takes a userUuid as a parameter and fetches the user entity from database
      *
      * @param userUuid
+     * @param authorizationToken
      * @return User entity from the database table with uuid = userUuid
      * @throws AuthorizationFailedException
      * @throws UserNotFoundException
@@ -36,6 +37,7 @@ public class UserBusinessService {
     @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity getUser(final String userUuid, final String authorizationToken)
             throws AuthorizationFailedException, UserNotFoundException {
+
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
         if (userAuthEntity == null) {
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
@@ -120,7 +122,7 @@ public class UserBusinessService {
     public UserAuthEntity authenticateUser(final String userName, final String password) throws AuthenticationFailedException {
         UserEntity userEntity = userDao.getUserByUserName(userName);
         if (userEntity == null) {
-            throw new AuthenticationFailedException("ATN-001", "This username does not exist");
+            throw new AuthenticationFailedException("ATH-001", "This username does not exist");
         }
 
         String encrypedPassword = PasswordCryptographyProvider.encrypt(password, userEntity.getSalt());
@@ -143,7 +145,7 @@ public class UserBusinessService {
             userAuthEntity.setLoginAt(now);
             return userAuthEntity;
         } else {
-            throw new AuthenticationFailedException("ATN-002", "Password failed");
+            throw new AuthenticationFailedException("ATH-002", "Password failed");
         }
     }
 
