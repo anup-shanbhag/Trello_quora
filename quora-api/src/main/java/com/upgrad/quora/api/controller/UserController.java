@@ -5,6 +5,7 @@ import com.upgrad.quora.api.model.SignoutResponse;
 import com.upgrad.quora.api.model.SignupUserRequest;
 import com.upgrad.quora.api.model.SignupUserResponse;
 import com.upgrad.quora.service.business.UserBusinessService;
+import com.upgrad.quora.service.constants.UserStatus;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
@@ -60,7 +61,7 @@ public class UserController {
         UserEntity createdUser = userBusinessService.registerUser(newUserEntiry);
         SignupUserResponse userResponse = new SignupUserResponse()
                 .id(createdUser.getUuid())
-                .status("USER SUCCESSFULLY REGISTERED");
+                .status(UserStatus.USER_REGISTERED.getStatus());
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
@@ -89,9 +90,9 @@ public class UserController {
 
             SigninResponse signinResponse = new SigninResponse();
             signinResponse.setId(userAuthEntity.getAccessToken());
-            signinResponse.setMessage("SIGNED IN SUCCESSFULLY");
+            signinResponse.setMessage(UserStatus.SIGNIN_SUCCESSFUL.getStatus());
             return new ResponseEntity<>(signinResponse, HttpStatus.OK);
-        } catch (IllegalArgumentException iae) {
+        } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException iae) {
             throw new AuthenticationFailedException("ATN-002", "Password failed");
         }
     }
@@ -114,7 +115,7 @@ public class UserController {
         UserEntity userEntity = userBusinessService.signoutUser(token);
         SignoutResponse signoutResponse = new SignoutResponse();
         signoutResponse.setId(userEntity.getUuid());
-        signoutResponse.setMessage("SIGNED OUT SUCCESSFULLY");
+        signoutResponse.setMessage(UserStatus.SIGNOUT_SUCCESSFUL.getStatus());
 
         return new ResponseEntity<>(signoutResponse, HttpStatus.OK);
 

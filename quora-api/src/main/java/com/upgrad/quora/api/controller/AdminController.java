@@ -2,6 +2,7 @@ package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.UserDeleteResponse;
 import com.upgrad.quora.service.business.UserBusinessService;
+import com.upgrad.quora.service.constants.UserStatus;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,7 @@ public class AdminController {
         String deletedUserId = userBusinessService.deleteUser(userId, token);
         UserDeleteResponse userDeleteResponse = new UserDeleteResponse();
         userDeleteResponse.setId(deletedUserId);
-        userDeleteResponse.setStatus("USER SUCCESSFULLY DELETED");
+        userDeleteResponse.setStatus(UserStatus.USER_DELETED.getStatus());
         return new ResponseEntity<>(userDeleteResponse, HttpStatus.OK);
     }
 }
