@@ -1,5 +1,6 @@
 package com.upgrad.quora.service.business;
 
+import com.upgrad.quora.service.constants.GetCurrentUserAction;
 import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
@@ -58,14 +59,28 @@ public class UserBusinessService {
      * @param authorizationToken User's authorization token
      * @return Returns current logged in user
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
+     * @author Anup Shanbhag (shanbhaganup@gmail.com)
      */
-    public UserEntity getCurrentUser(String authorizationToken) throws AuthorizationFailedException {
+    public UserEntity getCurrentUser(String authorizationToken, GetCurrentUserAction action ) throws AuthorizationFailedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
         if (userAuthEntity == null) {
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
         } else if ((userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
                 || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
+            switch(action){
+                case CREATE_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post an answer");
+                case EDIT_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit an answer");
+                case DELETE_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete an answer");
+                case GET_ALL_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get the answers");
+                case  GET_USER_DETAILS : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
+                case DELETE_USER: throw new AuthorizationFailedException("ATHR-002","User is signed out");
+                case CREATE_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post a question");
+                case GET_ALL_QUESTIONS: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
+                case EDIT_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit the question");
+                case DELETE_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete a question");
+                case GET_ALL_QUESTIONS_BY_USER: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions posted by a specific user");
+            }
+            return null;// need to remove this somehow, added  to avoid compile error
         } else {
             return userAuthEntity.getUser();
         }
@@ -141,7 +156,7 @@ public class UserBusinessService {
      * @return Signed-out user entity
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity signoutUser(String authorizationToken) throws SignOutRestrictedException {
+    public UserEntity signoutUser(String authorizationToken) throws SignOutRestrictedException {   //signOutUser
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
 
         if (userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
@@ -164,8 +179,7 @@ public class UserBusinessService {
     @Transactional(propagation = Propagation.REQUIRED)
     public String deleteUser(String userId, String token)
             throws AuthorizationFailedException, UserNotFoundException {
-        try {
-            UserEntity adminUser = this.getCurrentUser(token);
+            UserEntity adminUser = this.getCurrentUser(token,GetCurrentUserAction.DELETE_USER);
             if (!adminUser.getRole().equals("admin")) {
                 throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
             } else {
@@ -177,15 +191,5 @@ public class UserBusinessService {
                 }
                 return userId;
             }
-        } catch (AuthorizationFailedException afe) {
-            if (afe.getCode().equals("ATHR-001")) {
-                throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
-            } else if (afe.getCode().equals("ATHR-002")) {
-                throw new AuthorizationFailedException("ATHR-002", "User is signed out");
-            } else if (afe.getCode().equals("ATHR-003")) {
-                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
-            }
-            return null;
-        }
     }
 }
