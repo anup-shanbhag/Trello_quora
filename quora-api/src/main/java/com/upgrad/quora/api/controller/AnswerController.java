@@ -5,6 +5,7 @@ import com.upgrad.quora.service.business.AnswerBusinessService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.constants.AnswerStatus;
+import com.upgrad.quora.service.constants.GetCurrentUserAction;
 import com.upgrad.quora.service.entity.AnswerEntity;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserEntity;
@@ -57,14 +58,9 @@ public class AnswerController {
         answerEntity.setAns(answerRequest.getAnswer());
         answerEntity.setDate(LocalDate.now());
         answerEntity.setUuid(UUID.randomUUID().toString());
-        answerEntity.setUser(userBusinessService.getCurrentUser(token));
-        try{
-            QuestionEntity question = questionService.getQuestion(questionID);
-            answerEntity.setQuestion(question);
-        }
-        catch(InvalidQuestionException e){
-            throw new InvalidQuestionException("QUES-001","The question entered is invalid");
-        }
+        answerEntity.setUser(userBusinessService.getCurrentUser(token, GetCurrentUserAction.CREATE_ANSWER));
+        QuestionEntity question = questionService.getQuestion(questionID);
+        answerEntity.setQuestion(question);
         AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity);
         AnswerResponse answerResponse = new AnswerResponse().id(createdAnswer.getUuid()).status(AnswerStatus.ANSWER_CREATED.getTextStatus());
         return new ResponseEntity<>(answerResponse, HttpStatus.CREATED);
@@ -88,7 +84,7 @@ public class AnswerController {
                AnswerEditRequest answerEditRequest, @PathVariable("answerId") final String answerId)
         throws AnswerNotFoundException,AuthorizationFailedException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userBusinessService.getCurrentUser(token);
+        UserEntity user = userBusinessService.getCurrentUser(token,GetCurrentUserAction.EDIT_ANSWER);
         AnswerEntity answerEntity = answerBusinessService.getAnswer(answerId);
         answerEntity.setAns(answerEditRequest.getContent());
         AnswerEntity editedAnswer = answerBusinessService.editAnswer(answerEntity,user);
@@ -114,7 +110,7 @@ public class AnswerController {
                                                               @PathVariable("answerId") String answerId)
         throws AuthorizationFailedException, AnswerNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userBusinessService.getCurrentUser(token);
+        UserEntity user = userBusinessService.getCurrentUser(token,GetCurrentUserAction.DELETE_ANSWER);
         AnswerEntity answerEntity = answerBusinessService.getAnswer(answerId);
         answerId = answerBusinessService.deleteAnswer(answerEntity,user);
         AnswerDeleteResponse answerDeleteResponse = new AnswerDeleteResponse();
@@ -138,7 +134,7 @@ public class AnswerController {
                                                                                 @PathVariable("questionId") String questionId)
         throws AuthorizationFailedException, InvalidQuestionException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization,"Bearer ") : authorization;
-        UserEntity user = userBusinessService.getCurrentUser(token);
+        UserEntity user = userBusinessService.getCurrentUser(token,GetCurrentUserAction.GET_ALL_ANSWER);
         QuestionEntity question;
         try{
              question = questionService.getQuestion(questionId);

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.upgrad.quora.service.constants.GetCurrentUserAction;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -69,7 +70,7 @@ public class QuestionController {
 			QuestionRequest request) throws AuthorizationFailedException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token);
+		UserEntity user = userService.getCurrentUser(token, GetCurrentUserAction.CREATE_QUESTION);
 		QuestionEntity question = new QuestionEntity();
 		question.setContent(request.getContent());
 		question.setDate(LocalDate.now());
@@ -97,7 +98,7 @@ public class QuestionController {
 			@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token);
+		UserEntity user = userService.getCurrentUser(token,GetCurrentUserAction.GET_ALL_QUESTIONS);
 		List<QuestionDetailsResponse> responseItems = new ArrayList<>();
 		questionService.getAllQuestions().forEach(question -> responseItems
 				.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
@@ -131,7 +132,7 @@ public class QuestionController {
 			throws AuthorizationFailedException, InvalidQuestionException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token);
+		UserEntity user = userService.getCurrentUser(token,GetCurrentUserAction.EDIT_QUESTION);
 		QuestionEntity question = questionService.getQuestion(questionId);
 		question.setContent(request.getContent());
 		questionId = questionService.editQuestion(question, user);
@@ -162,7 +163,7 @@ public class QuestionController {
 			throws AuthorizationFailedException, InvalidQuestionException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token);
+		UserEntity user = userService.getCurrentUser(token,GetCurrentUserAction.DELETE_QUESTION);
 		QuestionEntity question = questionService.getQuestion(questionId);
 		questionId = questionService.deleteQuestion(question, user);
 		QuestionDeleteResponse response = new QuestionDeleteResponse();
@@ -191,7 +192,7 @@ public class QuestionController {
 			throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getUser(userId, token);
+		UserEntity user = userService.getUser(userId, token); // Why it get user used rather than getcurrentuser?
 		List<QuestionDetailsResponse> responseItems = new ArrayList<>();
 		questionService.getUserQuestions(user).forEach(question -> responseItems
 				.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
