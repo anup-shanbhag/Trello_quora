@@ -95,7 +95,7 @@ public class AnswerBusinessService {
   /**
    * Method takes a answerEntity,user as input
    *
-   * @param question
+   * @param questionId
    * @return list of Answer entity from the database where uuid=questionId
    *
    *
@@ -105,4 +105,5 @@ public class AnswerBusinessService {
     List<AnswerEntity> answerList = answerDao.getAllAnswersToQuestion(questionId);
     return  answerList;
   }
+
 }
