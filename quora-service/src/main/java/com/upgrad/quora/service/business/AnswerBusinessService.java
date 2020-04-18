@@ -1,5 +1,6 @@
 package com.upgrad.quora.service.business;
 
+import com.upgrad.quora.service.constants.ErrorConditions;
 import com.upgrad.quora.service.constants.UserRole;
 import com.upgrad.quora.service.dao.AnswerDao;
 import com.upgrad.quora.service.entity.AnswerEntity;
@@ -97,15 +98,15 @@ public class AnswerBusinessService {
   /**
    * Method takes a answerEntity,user as input
    *
-   * @param questionId
+   * @param question
    * @return list of Answer entity from the database where uuid=questionId
    *
    *
    */
   @Transactional(propagation = Propagation.REQUIRED)
-  public List<AnswerEntity> getAllAnswersToQuestion(String questionId){
-    List<AnswerEntity> answerList = answerDao.getAllAnswersToQuestion(questionId);
-    return  answerList;
-  }
+  public List<AnswerEntity> getAllAnswersToQuestion(QuestionEntity question) {
+    List<AnswerEntity> answerList = answerDao.getAllAnswersToQuestion(question);
+      return  answerList;
+   }
 
 }
