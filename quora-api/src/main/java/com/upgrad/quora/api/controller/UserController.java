@@ -13,6 +13,7 @@ import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -80,8 +81,7 @@ public class UserController {
             throws AuthenticationFailedException, IllegalArgumentException {
         try {
 
-            String authorizationKey = (authorization.contains("Basic ")) ?
-                    StringUtils.substringAfter(authorization, "Basic ") : authorization;
+            String authorizationKey = authorization.split("Basic ")[1];
 
             byte[] decode = Base64.getDecoder().decode(authorizationKey);
             String decodeText = new String(decode);
@@ -90,8 +90,13 @@ public class UserController {
 
             SigninResponse signinResponse = new SigninResponse();
             signinResponse.setId(userAuthEntity.getAccessToken());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("access_token", userAuthEntity.getAccessToken());
+
+            signinResponse.setId(userAuthEntity.getUuid());
             signinResponse.setMessage(UserStatus.SIGNIN_SUCCESSFUL.getStatus());
-            return new ResponseEntity<>(signinResponse, HttpStatus.OK);
+            return new ResponseEntity<>(signinResponse, headers ,HttpStatus.OK);
         } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException iae) {
             throw new AuthenticationFailedException("ATN-002", "Password failed");
         }
