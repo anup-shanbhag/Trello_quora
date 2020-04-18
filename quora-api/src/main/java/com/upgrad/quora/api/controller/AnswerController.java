@@ -146,10 +146,7 @@ public class AnswerController {
         QuestionEntity question;
         try{
              question = questionService.getQuestion(questionId);
-        }catch(InvalidQuestionException invalidQuestionException ){
-            throw new InvalidQuestionException(ANS_GET_QUES_NOT_FOUND.getCode(), ANS_GET_QUES_NOT_FOUND.getMessage());
-        }
-        List<AnswerEntity> answerEntityList = answerBusinessService.getAllAnswersToQuestion(questionId);
+        List<AnswerEntity> answerEntityList = answerBusinessService.getAllAnswersToQuestion(question);
         List<AnswerDetailsResponse> answerDetailsResponse = new ArrayList<>();
         answerEntityList.forEach(answer ->
             answerDetailsResponse.add(
@@ -157,7 +154,14 @@ public class AnswerController {
                     .id(answer.getUuid())
                     .questionContent(question.getContent())
                     .answerContent(answer.getAns())));
-        return new ResponseEntity<>(answerDetailsResponse, HttpStatus.OK);
+            if (answerDetailsResponse.isEmpty()) {
+                return new ResponseEntity<>(answerDetailsResponse, HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(answerDetailsResponse, HttpStatus.OK);
+            }
+        }catch(InvalidQuestionException invalidQuestionException ){
+            throw new InvalidQuestionException(ANS_GET_QUES_NOT_FOUND.getCode(), ANS_GET_QUES_NOT_FOUND.getMessage());
+        }
     }
 }
 

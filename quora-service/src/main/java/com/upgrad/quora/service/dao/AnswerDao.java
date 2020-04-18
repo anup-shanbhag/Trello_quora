@@ -74,13 +74,13 @@ public class AnswerDao {
     /**
      * Method takes a answerEntity as input
      *
-     * @param questionId
+     * @param question
      * @returnlist of answer entities for the given question ID
      *
      *
      */
-    public List<AnswerEntity> getAllAnswersToQuestion(String questionId){
-        return entityManager.createNamedQuery("Answers.fetchAllPerQuestion",AnswerEntity.class).setParameter("questionId",questionId).getResultList();
+    public List<AnswerEntity> getAllAnswersToQuestion(QuestionEntity question){
+        return entityManager.createNamedQuery("Answers.fetchAllPerQuestion",AnswerEntity.class).setParameter("question",question).getResultList();
     }
 
 }
