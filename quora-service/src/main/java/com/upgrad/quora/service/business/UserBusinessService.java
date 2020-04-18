@@ -35,27 +35,19 @@ public class UserBusinessService {
      * @throws UserNotFoundException
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserEntity getUser(final String userUuid, final String authorizationToken)
+    public UserEntity getUser(final String userUuid, final String authorizationToken, GetCurrentUserAction action)
             throws AuthorizationFailedException, UserNotFoundException {
-
-        UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
-        if (userAuthEntity == null) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
-        } else if ((userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
-                || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
-        } else {
-            UserEntity userEntity = userDao.getUser(userUuid);
-            if (userEntity == null) {
-                throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
-            }
-            return userEntity;
+        UserEntity currentUser = getCurrentUser(authorizationToken, action);
+        UserEntity userEntity = userDao.getUser(userUuid);
+        if (userEntity == null) {
+            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
         }
+        return userEntity;
     }
 
     /**
      * Method takes authorization token as input and return the current logged in user.
-     *
+     * @param action action for should current user is needed
      * @param authorizationToken User's authorization token
      * @return Returns current logged in user
      * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
@@ -72,15 +64,14 @@ public class UserBusinessService {
                 case EDIT_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit an answer");
                 case DELETE_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete an answer");
                 case GET_ALL_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get the answers");
-                case  GET_USER_DETAILS : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
                 case DELETE_USER: throw new AuthorizationFailedException("ATHR-002","User is signed out");
                 case CREATE_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post a question");
                 case GET_ALL_QUESTIONS: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
                 case EDIT_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit the question");
                 case DELETE_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete a question");
                 case GET_ALL_QUESTIONS_BY_USER: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions posted by a specific user");
+                default: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
             }
-            return null;// need to remove this somehow, added  to avoid compile error
         } else {
             return userAuthEntity.getUser();
         }
