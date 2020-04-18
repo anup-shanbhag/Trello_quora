@@ -2,6 +2,7 @@ package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.UserDetailsResponse;
 import com.upgrad.quora.service.business.UserBusinessService;
+import com.upgrad.quora.service.constants.GetCurrentUserAction;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
@@ -34,7 +35,7 @@ public class CommonController {
             throws AuthorizationFailedException, UserNotFoundException {
         String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ") : authorization;
 
-        UserEntity userEntity = userBusinessService.getUser(userId, token);
+        UserEntity userEntity = userBusinessService.getUser(userId, token, GetCurrentUserAction.GET_USER_DETAILS);
 
         UserDetailsResponse userDetailsResponse = new UserDetailsResponse()
                 .firstName(userEntity.getFirstName())

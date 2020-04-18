@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.upgrad.quora.service.constants.ErrorConditions.ANS_CREATE_QUES_NOT_FOUND;
+import static com.upgrad.quora.service.constants.ErrorConditions.ANS_GET_QUES_NOT_FOUND;
+
 @RestController
 @RequestMapping("/")
 public class AnswerController {
@@ -63,7 +66,7 @@ public class AnswerController {
         try {
              question = questionService.getQuestion(questionID);
         }catch (InvalidQuestionException iqe){
-            throw new InvalidQuestionException("QUES-001","The question entered is invalid");
+            throw new InvalidQuestionException(ANS_CREATE_QUES_NOT_FOUND.getCode(), ANS_CREATE_QUES_NOT_FOUND.getMessage());
         }
         answerEntity.setQuestion(question);
         AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity);
@@ -144,7 +147,7 @@ public class AnswerController {
         try{
              question = questionService.getQuestion(questionId);
         }catch(InvalidQuestionException invalidQuestionException ){
-            throw new InvalidQuestionException("QUES-001","The question with entered uuid whose details are to be seen does not exist");
+            throw new InvalidQuestionException(ANS_GET_QUES_NOT_FOUND.getCode(), ANS_GET_QUES_NOT_FOUND.getMessage());
         }
         List<AnswerEntity> answerEntityList = answerBusinessService.getAllAnswersToQuestion(questionId);
         List<AnswerDetailsResponse> answerDetailsResponse = new ArrayList<>();

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.upgrad.quora.service.constants.ErrorConditions.*;
+
 @Service
 public class AnswerBusinessService {
 
@@ -52,7 +54,7 @@ public class AnswerBusinessService {
   public AnswerEntity getAnswer (String answerId) throws AnswerNotFoundException {
     AnswerEntity answer = answerDao.getAnswer(answerId);
     if(answer==null){
-      throw new AnswerNotFoundException("ANS-001","Entered answer uuid does not exist");
+      throw new AnswerNotFoundException(ANS_NOT_FOUND.getCode(),ANS_NOT_FOUND.getMessage());
     } else {
       return answer;
     }
@@ -69,7 +71,7 @@ public class AnswerBusinessService {
   @Transactional(propagation = Propagation.REQUIRED)
   public AnswerEntity editAnswer(AnswerEntity answerEntity, UserEntity user) throws AuthorizationFailedException {
     if (!answerEntity.getUser().getUuid().equals(user.getUuid())) {
-      throw new AuthorizationFailedException("ATHR-003", "Only the answer owner can edit the answer");
+      throw new AuthorizationFailedException(ANS_EDIT_UNAUTHORIZED.getCode(), ANS_EDIT_UNAUTHORIZED.getMessage());
     }
     AnswerEntity editedAnswer = answerDao.editAnswer(answerEntity);
     return editedAnswer;
@@ -86,7 +88,7 @@ public class AnswerBusinessService {
   @Transactional(propagation = Propagation.REQUIRED)
   public String deleteAnswer(AnswerEntity answerEntity,UserEntity user) throws AuthorizationFailedException {
     if (!answerEntity.getUser().getUuid().equals(user.getUuid()) && !user.getRole().equals(UserRole.ADMIN.getRole())){
-      throw new AuthorizationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
+      throw new AuthorizationFailedException(ANS_DELETE_UNAUTHORIZED.getCode(), ANS_DELETE_UNAUTHORIZED.getMessage());
     }
     answerDao.deleteAnswer(answerEntity);
     return answerEntity.getUuid();
