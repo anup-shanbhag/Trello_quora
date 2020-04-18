@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
+import static com.upgrad.quora.service.constants.ErrorConditions.*;
+
 @Service
 public class UserBusinessService {
 
@@ -40,37 +42,40 @@ public class UserBusinessService {
         UserEntity currentUser = getCurrentUser(authorizationToken, action);
         UserEntity userEntity = userDao.getUser(userUuid);
         if (userEntity == null) {
-            throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+            switch (action){
+                case GET_ALL_QUESTIONS_BY_USER: throw new UserNotFoundException(QUES_GET_USR_NOT_FOUND.getCode(), QUES_GET_USR_NOT_FOUND.getMessage());
+                default: throw new UserNotFoundException(USER_NOT_FOUND.getCode(), USER_NOT_FOUND.getMessage());
+            }
         }
         return userEntity;
     }
 
     /**
      * Method takes authorization token as input and return the current logged in user.
-     * @param action action for should current user is needed
+     * @param action action for which current user is needed
      * @param authorizationToken User's authorization token
      * @return Returns current logged in user
-     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found.
+     * @throws AuthorizationFailedException if the authorization token is invalid, expired or not found
      * @author Anup Shanbhag (shanbhaganup@gmail.com)
      */
     public UserEntity getCurrentUser(String authorizationToken, GetCurrentUserAction action ) throws AuthorizationFailedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
         if (userAuthEntity == null) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+            throw new AuthorizationFailedException(USER_NOT_SIGNED_IN.getCode(), USER_NOT_SIGNED_IN.getMessage());
         } else if ((userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
                 || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
             switch(action){
-                case CREATE_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post an answer");
-                case EDIT_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit an answer");
-                case DELETE_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete an answer");
-                case GET_ALL_ANSWER : throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get the answers");
-                case DELETE_USER: throw new AuthorizationFailedException("ATHR-002","User is signed out");
-                case CREATE_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post a question");
-                case GET_ALL_QUESTIONS: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
-                case EDIT_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit the question");
-                case DELETE_QUESTION: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete a question");
-                case GET_ALL_QUESTIONS_BY_USER: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions posted by a specific user");
-                default: throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
+                case CREATE_ANSWER : throw new AuthorizationFailedException(ANS_CREATE_AUTH_FAILURE.getCode(),ANS_CREATE_AUTH_FAILURE.getMessage());
+                case EDIT_ANSWER : throw new AuthorizationFailedException(ANS_EDIT_AUTH_FAILURE.getCode(),ANS_EDIT_AUTH_FAILURE.getMessage());
+                case DELETE_ANSWER : throw new AuthorizationFailedException(ANS_DELETE_AUTH_FAILURE.getCode(),ANS_DELETE_AUTH_FAILURE.getMessage());
+                case GET_ALL_ANSWER : throw new AuthorizationFailedException(ANS_GET_AUTH_FAILURE.getCode(),ANS_GET_AUTH_FAILURE.getMessage());
+                case DELETE_USER: throw new AuthorizationFailedException(USER_SIGNED_OUT.getCode(),USER_SIGNED_OUT.getMessage());
+                case CREATE_QUESTION: throw new AuthorizationFailedException(QUES_CREATE_AUTH_FAILURE.getCode(),QUES_CREATE_AUTH_FAILURE.getMessage());
+                case GET_ALL_QUESTIONS: throw new AuthorizationFailedException(QUES_GET_ALL_AUTH_FAILURE.getCode(),QUES_GET_ALL_AUTH_FAILURE.getMessage());
+                case EDIT_QUESTION: throw new AuthorizationFailedException(QUES_EDIT_AUTH_FAILURE.getCode(),QUES_EDIT_AUTH_FAILURE.getMessage());
+                case DELETE_QUESTION: throw new AuthorizationFailedException(QUES_DELETE_AUTH_FAILURE.getCode(),QUES_DELETE_AUTH_FAILURE.getMessage());
+                case GET_ALL_QUESTIONS_BY_USER: throw new AuthorizationFailedException(QUES_GET_AUTH_FAILURE.getCode(),QUES_GET_AUTH_FAILURE.getMessage());
+                default: throw new AuthorizationFailedException(USER_GET_AUTH_FAILURE.getCode(),USER_GET_AUTH_FAILURE.getMessage());
             }
         } else {
             return userAuthEntity.getUser();
@@ -93,9 +98,9 @@ public class UserBusinessService {
             if (dataIntegrityViolationException.getCause() instanceof ConstraintViolationException) {
                 String constraintName = ((ConstraintViolationException) dataIntegrityViolationException.getCause()).getConstraintName();
                 if (StringUtils.containsIgnoreCase(constraintName, "userName")) {
-                    throw new SignUpRestrictedException("SGR-001", "Try any other Username, this Username has already been taken");
+                    throw new SignUpRestrictedException(USERNAME_ALREADY_EXISTS.getCode(), USERNAME_ALREADY_EXISTS.getMessage());
                 } else {
-                    throw new SignUpRestrictedException("SGR-002", "This user has already been registered, try with any other emailId");
+                    throw new SignUpRestrictedException(USER_EMAIL_ALREADY_EXISTS.getCode(), USER_EMAIL_ALREADY_EXISTS.getMessage());
                 }
             } else {
                 throw dataIntegrityViolationException;
@@ -113,7 +118,7 @@ public class UserBusinessService {
     public UserAuthEntity authenticateUser(final String userName, final String password) throws AuthenticationFailedException {
         UserEntity userEntity = userDao.getUserByUserName(userName);
         if (userEntity == null) {
-            throw new AuthenticationFailedException("ATH-001", "This username does not exist");
+            throw new AuthenticationFailedException(USERNAME_NOT_FOUND.getCode(), USERNAME_NOT_FOUND.getMessage());
         }
 
         String encrypedPassword = PasswordCryptographyProvider.encrypt(password, userEntity.getSalt());
@@ -136,7 +141,7 @@ public class UserBusinessService {
             userAuthEntity.setLoginAt(now);
             return userAuthEntity;
         } else {
-            throw new AuthenticationFailedException("ATH-002", "Password failed");
+            throw new AuthenticationFailedException(USER_WRONG_PASSWORD.getCode(), USER_WRONG_PASSWORD.getMessage());
         }
     }
 
@@ -152,7 +157,7 @@ public class UserBusinessService {
 
         if (userAuthEntity == null || (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(LocalDateTime.now()))
                 || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
-            throw new SignOutRestrictedException("SGR-001", "User is not Signed in");
+            throw new SignOutRestrictedException(USER_HAS_SIGNED_OUT.getCode(), USER_HAS_SIGNED_OUT.getMessage());
         } else {
             userAuthEntity.setLogoutAt(LocalDateTime.now());
             userDao.signoutUser(userAuthEntity);
@@ -172,11 +177,11 @@ public class UserBusinessService {
             throws AuthorizationFailedException, UserNotFoundException {
             UserEntity adminUser = this.getCurrentUser(token,GetCurrentUserAction.DELETE_USER);
             if (!adminUser.getRole().equals("admin")) {
-                throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+                throw new AuthorizationFailedException(USER_DELETE_UNAUTHORIZED.getCode(), USER_DELETE_UNAUTHORIZED.getMessage());
             } else {
                 UserEntity user = userDao.getUser(userId);
                 if (user == null) {
-                    throw new UserNotFoundException("USR-001", "User with entered uuid to be deleted does not exist");
+                    throw new UserNotFoundException(USER_DELETE_USR_NOT_FOUND.getCode(), USER_DELETE_USR_NOT_FOUND.getMessage());
                 } else {
                     userDao.deleteUser(user);
                 }

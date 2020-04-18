@@ -10,6 +10,7 @@ package com.upgrad.quora.service.business;
 
 import java.util.List;
 
+import com.upgrad.quora.service.constants.ErrorConditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,6 +22,8 @@ import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+
+import static com.upgrad.quora.service.constants.ErrorConditions.*;
 
 @Service
 public class QuestionService {
@@ -50,7 +53,7 @@ public class QuestionService {
 	public QuestionEntity getQuestion(String questionId) throws InvalidQuestionException {
 		QuestionEntity question = questionDao.getQuestion(questionId);
 		if (question == null) {
-			throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+			throw new InvalidQuestionException(QUES_NOT_FOUND.getCode(), QUES_NOT_FOUND.getMessage());
 		} else {
 			return question;
 		}
@@ -72,8 +75,8 @@ public class QuestionService {
 			questionDao.updateQuestion(question);
 			return question.getUuid();
 		} else {
-			throw new AuthorizationFailedException("ATHR-003",
-					"Only the question owner or admin can delete the question");
+			throw new AuthorizationFailedException(QUES_EDIT_UNAUTHORIZED.getCode(),
+					QUES_EDIT_UNAUTHORIZED.getMessage());
 		}
 	}
 
@@ -94,8 +97,8 @@ public class QuestionService {
 			questionDao.deleteQuestion(question);
 			return question.getUuid();
 		} else {
-			throw new AuthorizationFailedException("ATHR-003",
-					"Only the question owner or admin can delete the question");
+			throw new AuthorizationFailedException(QUES_DELETE_UNAUTHORIZED.getCode(),
+					QUES_DELETE_UNAUTHORIZED.getMessage());
 		}
 	}
 
