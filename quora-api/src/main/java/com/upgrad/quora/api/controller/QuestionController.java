@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.upgrad.quora.service.constants.GetCurrentUserAction;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,6 +42,7 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
+import com.upgrad.quora.service.constants.GetCurrentUserAction;
 
 @RestController
 @RequestMapping("/question")
@@ -98,10 +98,8 @@ public class QuestionController {
 			@RequestHeader("authorization") String authorization) throws AuthorizationFailedException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token,GetCurrentUserAction.GET_ALL_QUESTIONS);
-		List<QuestionDetailsResponse> responseItems = new ArrayList<>();
-		questionService.getAllQuestions().forEach(question -> responseItems
-				.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+		userService.getCurrentUser(token, GetCurrentUserAction.GET_ALL_QUESTIONS);
+		List<QuestionDetailsResponse> responseItems = this.mapListResponseItems(questionService.getAllQuestions());
 		if (responseItems.isEmpty()) {
 			return new ResponseEntity<>(responseItems, HttpStatus.NO_CONTENT);
 		} else {
@@ -132,7 +130,7 @@ public class QuestionController {
 			throws AuthorizationFailedException, InvalidQuestionException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token,GetCurrentUserAction.EDIT_QUESTION);
+		UserEntity user = userService.getCurrentUser(token, GetCurrentUserAction.EDIT_QUESTION);
 		QuestionEntity question = questionService.getQuestion(questionId);
 		question.setContent(request.getContent());
 		questionId = questionService.editQuestion(question, user);
@@ -163,7 +161,7 @@ public class QuestionController {
 			throws AuthorizationFailedException, InvalidQuestionException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getCurrentUser(token,GetCurrentUserAction.DELETE_QUESTION);
+		UserEntity user = userService.getCurrentUser(token, GetCurrentUserAction.DELETE_QUESTION);
 		QuestionEntity question = questionService.getQuestion(questionId);
 		questionId = questionService.deleteQuestion(question, user);
 		QuestionDeleteResponse response = new QuestionDeleteResponse();
@@ -189,18 +187,29 @@ public class QuestionController {
 	@RequestMapping(path = "/all/{userId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<List<QuestionDetailsResponse>> getUserQuestions(
 			@RequestHeader("authorization") String authorization, @PathVariable("userId") String userId)
-			throws AuthorizationFailedException, UserNotFoundException, UserNotFoundException {
+			throws AuthorizationFailedException, UserNotFoundException {
 		String token = (authorization.contains("Bearer ")) ? StringUtils.substringAfter(authorization, "Bearer ")
 				: authorization;
-		UserEntity user = userService.getUser(userId, token); // Why it get user used rather than getcurrentuser?
-		List<QuestionDetailsResponse> responseItems = new ArrayList<>();
-		questionService.getUserQuestions(user).forEach(question -> responseItems
-				.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+		UserEntity user = userService.getUser(userId, token, GetCurrentUserAction.GET_ALL_QUESTIONS_BY_USER);
+		List<QuestionDetailsResponse> responseItems = this.mapListResponseItems(questionService.getUserQuestions(user));
 		if (responseItems.isEmpty()) {
 			return new ResponseEntity<>(responseItems, HttpStatus.NO_CONTENT);
 		} else {
 			return new ResponseEntity<>(responseItems, HttpStatus.OK);
 		}
+	}
+
+	/**
+	 * This method takes a list of question items and maps it to the response items
+	 * 
+	 * @param questions List of questions
+	 * @return List of response items with question details
+	 */
+	private List<QuestionDetailsResponse> mapListResponseItems(List<QuestionEntity> questions) {
+		List<QuestionDetailsResponse> response = new ArrayList<>();
+		questions.forEach(question -> response
+				.add(new QuestionDetailsResponse().id(question.getUuid()).content(question.getContent())));
+		return response;
 	}
 
 }
