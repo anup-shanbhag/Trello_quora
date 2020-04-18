@@ -59,7 +59,12 @@ public class AnswerController {
         answerEntity.setDate(LocalDate.now());
         answerEntity.setUuid(UUID.randomUUID().toString());
         answerEntity.setUser(userBusinessService.getCurrentUser(token, GetCurrentUserAction.CREATE_ANSWER));
-        QuestionEntity question = questionService.getQuestion(questionID);
+        QuestionEntity question;
+        try {
+             question = questionService.getQuestion(questionID);
+        }catch (InvalidQuestionException iqe){
+            throw new InvalidQuestionException("QUES-001","The question entered is invalid");
+        }
         answerEntity.setQuestion(question);
         AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity);
         AnswerResponse answerResponse = new AnswerResponse().id(createdAnswer.getUuid()).status(AnswerStatus.ANSWER_CREATED.getTextStatus());
