@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.upgrad.quora.service.constants.ErrorConditions.ANS_CREATE_QUES_NOT_FOUND;
+import static com.upgrad.quora.service.constants.ErrorConditions.ANS_GET_QUES_NOT_FOUND;
+
 @RestController
 @RequestMapping("/")
 public class AnswerController {
@@ -59,7 +62,12 @@ public class AnswerController {
         answerEntity.setDate(LocalDate.now());
         answerEntity.setUuid(UUID.randomUUID().toString());
         answerEntity.setUser(userBusinessService.getCurrentUser(token, GetCurrentUserAction.CREATE_ANSWER));
-        QuestionEntity question = questionService.getQuestion(questionID);
+        QuestionEntity question;
+        try {
+             question = questionService.getQuestion(questionID);
+        }catch (InvalidQuestionException iqe){
+            throw new InvalidQuestionException(ANS_CREATE_QUES_NOT_FOUND.getCode(), ANS_CREATE_QUES_NOT_FOUND.getMessage());
+        }
         answerEntity.setQuestion(question);
         AnswerEntity createdAnswer = answerBusinessService.createAnswer(answerEntity);
         AnswerResponse answerResponse = new AnswerResponse().id(createdAnswer.getUuid()).status(AnswerStatus.ANSWER_CREATED.getTextStatus());
@@ -138,10 +146,7 @@ public class AnswerController {
         QuestionEntity question;
         try{
              question = questionService.getQuestion(questionId);
-        }catch(InvalidQuestionException invalidQuestionException ){
-            throw new InvalidQuestionException("QUES-001","The question with entered uuid whose details are to be seen does not exist");
-        }
-        List<AnswerEntity> answerEntityList = answerBusinessService.getAllAnswersToQuestion(questionId);
+        List<AnswerEntity> answerEntityList = answerBusinessService.getAllAnswersToQuestion(question);
         List<AnswerDetailsResponse> answerDetailsResponse = new ArrayList<>();
         answerEntityList.forEach(answer ->
             answerDetailsResponse.add(
@@ -149,7 +154,14 @@ public class AnswerController {
                     .id(answer.getUuid())
                     .questionContent(question.getContent())
                     .answerContent(answer.getAns())));
-        return new ResponseEntity<>(answerDetailsResponse, HttpStatus.OK);
+            if (answerDetailsResponse.isEmpty()) {
+                return new ResponseEntity<>(answerDetailsResponse, HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(answerDetailsResponse, HttpStatus.OK);
+            }
+        }catch(InvalidQuestionException invalidQuestionException ){
+            throw new InvalidQuestionException(ANS_GET_QUES_NOT_FOUND.getCode(), ANS_GET_QUES_NOT_FOUND.getMessage());
+        }
     }
 }
 
